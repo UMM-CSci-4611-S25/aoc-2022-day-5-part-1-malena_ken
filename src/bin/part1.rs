@@ -57,6 +57,8 @@ enum CraneError {
     // that can occur when applying a crane instruction.
     // This could include things like trying to move from an empty stack,
     // trying to get the top of an empty stack, etc.
+    InvalidStack,
+    EmptyStack,
 }
 
 impl Stacks {
@@ -64,20 +66,41 @@ impl Stacks {
     /// Return the new set of stacks, or a `CraneError` if the instruction
     /// is invalid.
     fn apply_instruction(mut self, instruction: &CraneInstruction) -> Result<Self, CraneError> {
-        todo!()
+        if instruction.from_stack >= NUM_STACKS || instruction.to_stack >= NUM_STACKS {
+            return Err(CraneError::InvalidStack);
+        }
+        let crates_to_move: Vec<char> = self.stacks[instruction.from_stack]
+            .stack
+            .drain(self.stacks[instruction.from_stack].stack.len() - instruction.num_to_move..)
+            .collect();
+        self.stacks[instruction.to_stack]
+            .stack
+            .extend(crates_to_move);
+        Ok(self)
     }
 
     /// Perform each of these instructions in order on the set of stacks
     /// in `self`. Return the new set of stacks, or a `CraneError` if
     /// any of the instructions are invalid.
     fn apply_instructions(self, instructions: &CraneInstructions) -> Result<Self, CraneError> {
-        todo!()
+        let mut new_stacks = self;
+        for instruction in &instructions.instructions {
+            new_stacks = new_stacks.apply_instruction(instruction)?;
+        }
+        Ok(new_stacks)
     }
 
     /// Return a string containing the top character of each stack in order.
     /// The stacks should all be non-empty; if any is empty return a `CraneError`.
     fn tops_string(&self) -> Result<String, CraneError> {
-        todo!()
+        let mut tops = String::new();
+        for stack in &self.stacks {
+            if stack.stack.is_empty() {
+                return Err(CraneError::EmptyStack);
+            }
+            tops.push(stack.stack[stack.stack.len() - 1]);
+        }
+        Ok(tops)
     }
 }
 
@@ -92,7 +115,18 @@ impl FromStr for Stacks {
     // Note that the stack numbers start at 1 and you'll need the indices
     // in `Stacks::stacks` to start at 0.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        todo!()
+        let mut stacks = Stacks::default();
+        for line in s.lines() {
+            let mut parts = line.split_ascii_whitespace();
+            let stack_num = parts
+                .next()
+                .expect("No stack number found")
+                .parse::<usize>()
+                .expect("Failed to parse stack number") - 1;
+            let stack_contents = parts.collect::<String>();
+            stacks.stacks[stack_num].stack = stack_contents.chars().collect();
+        }
+        Ok(stacks)
     }
 }
 
@@ -111,7 +145,9 @@ impl FromStr for Stack {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        todo!()
+        let mut stack = Stack::default();
+        stack.stack = s.chars().collect();
+        Ok(stack)
     }
 }
 
@@ -121,7 +157,7 @@ impl FromStr for Stack {
 // using something like ``assert_eq!(stack, vec!['A', 'B', 'C'])`.
 impl PartialEq<Vec<char>> for Stack {
     fn eq(&self, other: &Vec<char>) -> bool {
-        todo!()
+        self.stack == *other
     }
 }
 
@@ -142,7 +178,16 @@ impl FromStr for CraneInstruction {
     // then parse into `usize` using a `map` statement. You could also just
     // "reach" into the split string directly if you find that easier.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        todo!()
+        let parts: Vec<usize> = s
+            .split_ascii_whitespace()
+            .filter_map(|part| part.parse().ok())
+            .collect();
+     
+        Ok(CraneInstruction {
+            num_to_move: parts[1],
+            from_stack: parts[3],
+            to_stack: parts[5],
+        })
     }
 }
 
@@ -168,7 +213,7 @@ mod tests {
 
     // Test that we can parse stacks correctly.
     #[test]
-    #[ignore = "We haven't implemented stack parsing yet"]
+   // #[ignore = "We haven't implemented stack parsing yet"]
     fn test_from_str() {
         // The `\` at the end of the line escapes the newline and all following whitespace.
         let input = "1 Z N\n\
