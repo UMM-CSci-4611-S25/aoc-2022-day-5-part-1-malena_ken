@@ -68,14 +68,13 @@ impl Stacks {
     /// Return the new set of stacks, or a `CraneError` if the instruction
     /// is invalid.
     fn apply_instruction(mut self, instruction: &CraneInstruction) -> Result<Self, CraneError> {
-        
         // Throw error if the stack moving from or moving to does not exist
         if instruction.from_stack >= NUM_STACKS || instruction.to_stack >= NUM_STACKS {
             return Err(CraneError::InvalidStack);
         }
 
-        if self.stacks[instruction.from_stack].len() < instruction.num_to_move{
-            return Err(CraneError::InvalidMove(self, *instruction))
+        if self.stacks[instruction.from_stack].len() < instruction.num_to_move {
+            return Err(CraneError::InvalidMove(self, *instruction));
         }
 
         // collects the crates to move as a vector of characters.
@@ -136,13 +135,14 @@ impl FromStr for Stacks {
         // for each line in the input string, parse the stack number and stack contents
         for line in s.lines() {
             let mut parts = line.split_ascii_whitespace(); // split the line into parts
-            let stack_num = parts  // get the stack number
-                .next()  // get the first part of the line
-                .expect("No stack number found")  // if there is no stack number, return an error
-                .parse::<usize>()  // parse the stack number as a usize
-                .expect("Failed to parse stack number") - 1;  // subtract 1 from the stack number to get the index
-            let stack_contents = parts.collect::<String>();  // get the stack contents
-            stacks.stacks[stack_num].stack = stack_contents.chars().collect();  // set the stack contents
+            let stack_num = parts // get the stack number
+                .next() // get the first part of the line
+                .expect("No stack number found") // if there is no stack number, return an error
+                .parse::<usize>() // parse the stack number as a usize
+                .expect("Failed to parse stack number")
+                - 1; // subtract 1 from the stack number to get the index
+            let stack_contents = parts.collect::<String>(); // get the stack contents
+            stacks.stacks[stack_num].stack = stack_contents.chars().collect(); // set the stack contents
         }
         Ok(stacks)
     }
@@ -206,7 +206,7 @@ impl FromStr for CraneInstruction {
         if parts.len() != 3 {
             return Err(ParseError::InvalidInstruction);
         }
-     
+
         Ok(CraneInstruction {
             num_to_move: parts[0],
             from_stack: parts[1] - 1,
@@ -241,7 +241,7 @@ mod tests {
 
     // Test that we can parse stacks correctly.
     #[test]
- // #[ignore = "We haven't implemented stack parsing yet"]
+    // #[ignore = "We haven't implemented stack parsing yet"]
     fn test_from_str() {
         // The `\` at the end of the line escapes the newline and all following whitespace.
         let input = "1 Z N\n\
