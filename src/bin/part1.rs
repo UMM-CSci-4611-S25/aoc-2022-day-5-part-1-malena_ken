@@ -80,7 +80,8 @@ impl Stacks {
             .collect();
         self.stacks[instruction.to_stack]
             .stack
-            .extend(crates_to_move);
+            //.extend(crates_to_move);
+            .extend(crates_to_move.iter().rev());
         Ok(self)
     }
 
