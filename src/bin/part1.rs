@@ -60,6 +60,7 @@ enum CraneError {
     // trying to get the top of an empty stack, etc.
     InvalidStack,
     EmptyStack,
+    InvalidMove(Stacks, CraneInstruction),
 }
 
 impl Stacks {
@@ -71,6 +72,10 @@ impl Stacks {
         // Throw error if the stack moving from or moving to does not exist
         if instruction.from_stack >= NUM_STACKS || instruction.to_stack >= NUM_STACKS {
             return Err(CraneError::InvalidStack);
+        }
+
+        if self.stacks[instruction.from_stack].len() < instruction.num_to_move{
+            return Err(CraneError::InvalidMove(self, *instruction))
         }
 
         // collects the crates to move as a vector of characters.
@@ -175,6 +180,7 @@ impl PartialEq<Vec<char>> for Stack {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
 struct CraneInstruction {
     num_to_move: usize,
     from_stack: usize,
@@ -203,8 +209,8 @@ impl FromStr for CraneInstruction {
      
         Ok(CraneInstruction {
             num_to_move: parts[0],
-            from_stack: parts[1],
-            to_stack: parts[2],
+            from_stack: parts[1] - 1,
+            to_stack: parts[2] - 1,
         })
     }
 }
@@ -262,11 +268,11 @@ mod tests {
         let instructions: CraneInstructions = input.parse().unwrap();
         assert_eq!(2, instructions.instructions.len());
         assert_eq!(1, instructions.instructions[0].num_to_move);
-        assert_eq!(1, instructions.instructions[0].to_stack);
-        assert_eq!(2, instructions.instructions[0].from_stack);
+        assert_eq!(0, instructions.instructions[0].to_stack);
+        assert_eq!(1, instructions.instructions[0].from_stack);
         assert_eq!(3, instructions.instructions[1].num_to_move);
-        assert_eq!(3, instructions.instructions[1].to_stack);
-        assert_eq!(1, instructions.instructions[1].from_stack);
+        assert_eq!(2, instructions.instructions[1].to_stack);
+        assert_eq!(0, instructions.instructions[1].from_stack);
     }
 
     // You probably want some tests that check that `apply_instruction` works as expected.
@@ -317,7 +323,7 @@ mod tests {
 
     // This essentially runs `main()` and checks that the results are correct for part 1.
     #[test]
-    #[ignore = "We haven't implemented the `apply_instructions` method yet"]
+    // #[ignore = "We haven't implemented the `apply_instructions` method yet"]
     fn test_part_1() {
         let contents =
             fs::read_to_string(INPUT_FILE).expect(&format!("Failed to open file '{INPUT_FILE}'"));
