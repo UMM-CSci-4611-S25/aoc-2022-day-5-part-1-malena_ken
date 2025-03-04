@@ -42,6 +42,7 @@ fn main() {
 pub enum ParseError {
     // Add different variants as you discover different kinds of parsing errors.
     // This could include things like too many stacks, illegal strings on a stack, etc.
+    InvalidInstruction,
 }
 
 const NUM_STACKS: usize = 9;
@@ -194,11 +195,15 @@ impl FromStr for CraneInstruction {
             .split_ascii_whitespace()
             .filter_map(|part| part.parse().ok())
             .collect();
+
+        if parts.len() != 3 {
+            return Err(ParseError::InvalidInstruction);
+        }
      
         Ok(CraneInstruction {
-            num_to_move: parts[1],
-            from_stack: parts[3],
-            to_stack: parts[5],
+            num_to_move: parts[0],
+            from_stack: parts[1],
+            to_stack: parts[2],
         })
     }
 }
@@ -211,7 +216,11 @@ impl FromStr for CraneInstructions {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        todo!()
+        let instructions = s
+            .lines()
+            .map(|line| line.parse())
+            .collect::<Result<Vec<CraneInstruction>, ParseError>>()?;
+        Ok(CraneInstructions { instructions })
     }
 }
 
@@ -225,7 +234,7 @@ mod tests {
 
     // Test that we can parse stacks correctly.
     #[test]
-   // #[ignore = "We haven't implemented stack parsing yet"]
+ // #[ignore = "We haven't implemented stack parsing yet"]
     fn test_from_str() {
         // The `\` at the end of the line escapes the newline and all following whitespace.
         let input = "1 Z N\n\
@@ -246,7 +255,7 @@ mod tests {
 
     // Test that we can parse instructions correctly.
     #[test]
-    #[ignore = "We haven't implemented instruction parsing yet"]
+    //  #[ignore = "We haven't implemented instruction parsing yet"]
     fn test_instruction_parsing() {
         let input = "move 1 from 2 to 1\nmove 3 from 1 to 3";
         let instructions: CraneInstructions = input.parse().unwrap();
@@ -269,7 +278,7 @@ mod tests {
     // Test that the instruction `move 2 from 0 to 1` works as expected with non-empty
     // stacks.
     #[test]
-    #[ignore = "We haven't implemented the `apply_instruction` method yet"]
+    //#[ignore = "We haven't implemented the `apply_instruction` method yet"]
     fn test_apply_instruction() {
         let stacks = Stacks {
             stacks: [
