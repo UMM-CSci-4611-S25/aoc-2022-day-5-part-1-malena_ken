@@ -70,6 +70,7 @@ impl Stacks {
     /// Apply a single instruction to the set of stacks in `self`.
     /// Return the new set of stacks, or a `CraneError` if the instruction
     /// is invalid.
+
     fn apply_instruction(mut self, instruction: &CraneInstruction) -> Result<Self, CraneError> {
         // Throw error if the stack moving from or moving to does not exist
         if instruction.from_stack >= NUM_STACKS || instruction.to_stack >= NUM_STACKS {
@@ -87,8 +88,7 @@ impl Stacks {
             .collect();
         self.stacks[instruction.to_stack]
             .stack
-            //.extend(crates_to_move);
-            .extend(crates_to_move.iter().rev());
+            .extend(crates_to_move); // Preserve the order of crates
         Ok(self)
     }
 
@@ -241,7 +241,7 @@ mod tests {
 
     #[test]
     // #[ignore = "We haven't implemented the `apply_instructions` method yet"]
-    fn test_part_1() {
+    fn test_part_2() {
         let contents =
             fs::read_to_string(INPUT_FILE).expect(&format!("Failed to open file '{INPUT_FILE}'"));
 
